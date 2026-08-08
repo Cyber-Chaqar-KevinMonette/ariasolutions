@@ -1,0 +1,151 @@
+"""
+test_cockpit.py — smoke tests for the v0.2.15.3 operator cockpit.
+
+Textual provides `App.run_test()` which runs the app headlessly with a
+Pilot for driving keyboard input. We use it to prove:
+
+  1. The app launches and the layout renders without errors.
+  2. All widgets are present and reachable.
+  3. The keybindings are wired (Ctrl-L clears, etc).
+  4. The slash-command parser dispatches correctly.
+  5. The status worker can read state from a real (test) data dir.
+
+We do NOT test the directive dispatch (`sov do`) here — that would
+require an Ollama server and a model. The CLI dispatch path is
+covered by the unit tests on `sov do` itself elsewhere.
+"""
+from __future__ import annotations
+
+import pytest
+
+
+@pytest.mark.asyncio
+async def test_cockpit_launches_and_renders():
+    """The most basic invariant: the app must render without crashing."""
+    from sovereign_agent.cockpit import CockpitApp
+    app = CockpitApp()
+    async with app.run_test() as pilot:
+        # Let the on_mount handler complete.
+        await pilot.pause()
+        # The four core widgets must be reachable.
+        chat = app.query_one("#chat-log")
+        events = app.query_one("#events-log")
+        input_box = app.query_one("#input-box")
+        status = app.query_one("#status-bar")
+        assert chat is not None
+        assert events is not None
+        assert input_box is not None
+        assert status is not None
+
+
+@pytest.mark.asyncio
+async def test_clear_chat_binding():
+    """Ctrl-L should clear the chat log (welcome message goes away)."""
+    from sovereign_agent.cockpit import CockpitApp
+    app = CockpitApp()
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        # Welcome message was written on mount.
+        chat = app.query_one("#chat-log")
+        line_count_before = len(chat.lines)
+        assert line_count_before > 0
+        # Trigger clear directly (action paths run reliably; key delivery
+        # depends on terminal emulation specifics).
+        app.action_clear_chat()
+        await pilot.pause()
+        # After clear we should have just the "chat cleared" meta line.
+        assert len(chat.lines) < line_count_before
+
+
+@pytest.mark.asyncio
+async def test_slash_quit_exits_app():
+    """Typing /quit should exit the app cleanly."""
+    from sovereign_agent.cockpit import CockpitApp
+    app = CockpitApp()
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        # Inject text into the input and submit.
+        input_box = app.query_one("#input-box")
+        input_box.value = "/quit"
+        # Submitting Input emits a Submitted message which routes through
+        # on_input_submitted. We invoke the handler directly here.
+        from textual.widgets import Input
+        msg = Input.Submitted(input_box, "/quit", validation_result=None)
+        app.on_input_submitted(msg)
+        await pilot.pause()
+        # After /quit the app should be exiting.
+        assert app._exit is True or app.return_value is None
+
+
+@pytest.mark.asyncio
+async def test_slash_help_pushes_help_screen():
+    """Typing /help should push the help modal."""
+    from sovereign_agent.cockpit import CockpitApp, HelpScreen
+    app = CockpitApp()
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        from textual.widgets import Input
+        input_box = app.query_one("#input-box")
+        msg = Input.Submitted(input_box, "/help", validation_result=None)
+        app.on_input_submitted(msg)
+        await pilot.pause()
+        assert isinstance(app.screen, HelpScreen)
+
+
+@pytest.mark.asyncio
+async def test_unknown_slash_command_is_handled():
+    """Unknown slash commands should be reported, not crash."""
+    from sovereign_agent.cockpit import CockpitApp
+    app = CockpitApp()
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        from textual.widgets import Input
+        input_box = app.query_one("#input-box")
+        chat = app.query_one("#chat-log")
+        lines_before = len(chat.lines)
+        msg = Input.Submitted(input_box, "/floopdoodle", validation_result=None)
+        app.on_input_submitted(msg)
+        await pilot.pause()
+        # A "unknown command" line should have been added.
+        assert len(chat.lines) > lines_before
+
+
+@pytest.mark.asyncio
+async def test_status_read_does_not_crash_on_fresh_dir():
+    """Status read must succeed against a fresh data dir (no atoms.db ledger)."""
+    from sovereign_agent import __version__
+    from sovereign_agent.cockpit.app import CockpitApp
+    app = CockpitApp()
+    # Direct synchronous call to the read helper.
+    s = app._read_status()
+    # On fresh data: ledger may be considered clean (0 rows is clean).
+    # The important thing: it didn't raise.
+    # Version comes from the live __version__ (MOS-SURFACE S4).
+    assert s.version == __version__
+    assert isinstance(s.halt, bool)
+    assert isinstance(s.daemon_active, bool)
+
+
+@pytest.mark.asyncio
+async def test_inbox_pane_exists_and_renders_requests():
+    """v0.2.37.0 — the 4th window (◊ inbox) must exist and render the
+    collaboration requests filed in the store."""
+    from sovereign_agent.cockpit import CockpitApp
+    from sovereign_agent.config import SETTINGS
+    from sovereign_agent.persistence.store import ErebloStore
+    from sovereign_agent.workflow.requests import RequestStore
+
+    rs = RequestStore(ErebloStore(SETTINGS.paths.atoms_db))
+    rs.open("question", "What database should I use?")
+    done = rs.open("suggestion", "Add a cache layer")
+    rs.resolve(done.request_id)
+
+    app = CockpitApp()
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        inbox = app.query_one("#inbox-log")
+        assert inbox is not None
+        app._refresh_inbox_pane()
+        await pilot.pause()
+        # The pane rendered content (open item + recent section).
+        assert len(inbox.lines) > 0

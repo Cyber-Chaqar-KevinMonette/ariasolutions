@@ -1,0 +1,19 @@
+# aria-backup.service — the daily snapshot, never forgotten again
+# ===============================================================
+# Root-caused 2026-07-18: the backup sentinel erred at 99h stale because
+# snapshots only ran when a human remembered — no automation existed.
+# The data dir now carries the vault, client DB, entitlements, and money
+# ledgers, so this is the shop's seatbelt. Fired by aria-backup.timer.
+#
+# Install (or just run scripts/systemd/install.sh):
+#   cp scripts/systemd/aria-backup.{service,timer} ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now aria-backup.timer
+
+[Unit]
+Description=Aria — daily application-consistent snapshot
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/kmon/AA-Erebo/sovereign-agent
+ExecStart=/home/kmon/AA-Erebo/sovereign-agent/.venv/bin/sov backup snapshot

@@ -1,0 +1,4 @@
+peig-engine/
+
+# real, live secrets live here (webhook URLs, tokens) — never commit
+sov-backups/

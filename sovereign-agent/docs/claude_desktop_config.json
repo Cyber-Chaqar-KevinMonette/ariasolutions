@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "aria": {
+      "command": "sov-mcp",
+      "args": [],
+      "_comment": "Aria — Sovereign Agent (MCP bridge). Tools: 12 including impulse_check, proof_history, backlog, ask_aria."
+    }
+  }
+}

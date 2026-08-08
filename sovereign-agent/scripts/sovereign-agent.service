@@ -1,0 +1,46 @@
+# sovereign-agent.service — systemd user unit
+# ============================================
+#
+# Install:
+#   mkdir -p ~/.config/systemd/user
+#   cp scripts/sovereign-agent.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now sovereign-agent.service
+#
+# Logs:
+#   journalctl --user -u sovereign-agent -f
+#
+# Stop:
+#   systemctl --user stop sovereign-agent
+#   # or trip PROTOCOL-ZERO from anywhere:
+#   echo "manual halt" > ~/.config/sovereign-agent/HALT
+#
+# This unit assumes the project is installed in ~/.local/share/sovereign-agent/venv
+# Adjust paths if you installed elsewhere.
+
+[Unit]
+Description=Sovereign Agent — local 24/7 task runner
+After=ollama.service
+Wants=ollama.service
+
+# Don't let one bad task DoS the system — restart at most 5 times per 60s.
+# These keys belong in [Unit] (systemd >=230), not [Service].
+StartLimitBurst=5
+StartLimitIntervalSec=60
+
+[Service]
+Type=simple
+# Use the venv's sovereign binary. Adjust path if you installed differently.
+ExecStart=%h/.local/share/sovereign-agent/venv/bin/sovereign busy --cooldown 5
+Restart=on-failure
+RestartSec=30
+
+# Resource limits — adjust to taste
+MemoryMax=4G
+CPUQuota=80%
+
+# Environment
+Environment="AGENT_THINK=plan_only"
+
+[Install]
+WantedBy=default.target

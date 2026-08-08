@@ -1,0 +1,28 @@
+{
+  "orchestrator": {
+    "model": "qwen3:8b",
+    "temperature": 0.3,
+    "num_ctx": 16384
+  },
+  "coder": {
+    "model": "qwen2.5-coder:7b",
+    "temperature": 0.15,
+    "num_ctx": 16384
+  },
+  "fast": {
+    "model": "phi4-mini:3.8b",
+    "temperature": 0.3
+  },
+  "reflector": {
+    "model": "phi4-mini:3.8b",
+    "temperature": 0.4
+  },
+  "interpreter": {
+    "model": "phi4-mini:3.8b",
+    "temperature": 0.15
+  },
+  "vision": {
+    "model": "qwen3-vl:4b",
+    "temperature": 0.2
+  }
+}

@@ -1,0 +1,16 @@
+# aria-backup.timer — fires aria-backup.service once a day
+# =========================================================
+# Persistent=true: a missed window (machine asleep/off) runs on next
+# boot instead of silently skipping — the 99h-stale class of lapse
+# becomes structurally impossible while this timer is enabled.
+
+[Unit]
+Description=Aria — daily snapshot timer
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+RandomizedDelaySec=15m
+
+[Install]
+WantedBy=timers.target

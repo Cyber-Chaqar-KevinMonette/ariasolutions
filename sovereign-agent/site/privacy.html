@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy — Aria Solutions / BigKev's Bot Shop</title>
+<meta name="description" content="Privacy Policy for BigKev's Bot Shop — local-first, privacy-lean. We keep very little, and we sell nothing.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>">
+<style>
+  :root{--bg:#0a0f14;--card:#10171e;--ink:#e8eef2;--muted:#8a99a6;--line:#223040;--brand:#ffb43f;--brand2:#56c7d6;
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,"DejaVu Sans Mono",Consolas,monospace}
+  @media(prefers-color-scheme:light){:root{--bg:#f4f6f8;--card:#fff;--ink:#0e1a24;--muted:#5a6b76;--line:#e0e6eb;--brand:#c47f10;--brand2:#1f8ea0}}
+  :root[data-theme="light"]{--bg:#f4f6f8;--card:#fff;--ink:#0e1a24;--muted:#5a6b76;--line:#e0e6eb;--brand:#c47f10;--brand2:#1f8ea0}
+  :root[data-theme="dark"]{--bg:#0a0f14;--card:#10171e;--ink:#e8eef2;--muted:#8a99a6;--line:#223040;--brand:#ffb43f;--brand2:#56c7d6}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .top{border-bottom:1px solid var(--line)}
+  .wrap{max-width:780px;margin:0 auto;padding:0 22px}
+  .top .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+  .logo{display:flex;align-items:center;gap:.6rem;font-weight:800;text-decoration:none;color:var(--ink)}
+  .logo .mark{width:32px;height:32px;border-radius:8px;background:var(--card);border:1px solid var(--line);display:grid;place-items:center}
+  .back{color:var(--muted);text-decoration:none;font-weight:600;font-size:.82rem;font-family:var(--mono);letter-spacing:.04em}
+  .back:hover{color:var(--ink)}
+  main{padding:44px 0 72px}
+  h1{font-size:clamp(1.8rem,4vw,2.4rem);margin:.2rem 0 .3rem;letter-spacing:-.02em}
+  .meta{color:var(--muted);margin:0 0 1.6rem;font-size:.9rem;font-family:var(--mono);line-height:1.9}
+  .summary{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:0 0 2rem}
+  h2{margin:2.2rem 0 .5rem;font-size:1.18rem;letter-spacing:-.01em;padding-top:.6rem;border-top:1px solid var(--line)}
+  p,li{color:var(--ink)}
+  a{color:var(--brand2)}
+  ul{padding-left:1.2rem}li{margin:.35rem 0}
+  table{width:100%;border-collapse:collapse;margin:.6rem 0;font-size:.94rem;display:block;overflow-x:auto}
+  th,td{border:1px solid var(--line);padding:.6rem .7rem;text-align:left;vertical-align:top}
+  th{background:var(--card);color:var(--ink)}
+  .note{color:var(--muted);font-style:italic;font-size:.92rem;border-left:3px solid var(--line);padding-left:1rem;margin-top:2.4rem}
+  strong{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="top"><div class="wrap">
+  <a class="logo" href="index.html"><span class="mark">📡</span><span>Aria&nbsp;Solutions</span></a>
+  <a class="back" href="index.html">← Back to home</a>
+</div></div>
+<main class="wrap">
+  <h1>Privacy Policy</h1>
+  <p class="meta"><strong>Effective date:</strong> July 14, 2026<br>
+  <strong>Contact:</strong> <a href="mailto:admin@ariasolutions.org">admin@ariasolutions.org</a></p>
+
+  <div class="summary">This policy explains what data <strong>BigKev's Bot Shop</strong> (our Discord server
+  and bots, including "Aria") handles, and how. We built the Service local-first and privacy-lean on purpose —
+  the honest summary is: <strong>we keep very little, and we sell nothing.</strong></div>
+
+  <h2>What we collect</h2>
+  <table>
+    <tr><th>Data</th><th>Why</th><th>Where it lives</th></tr>
+    <tr><td>Your Discord user ID and username</td><td>to answer you, run subscriptions/roles, prevent abuse (rate-limits), and greet new members exactly once</td><td>operator's private machine (audit logs)</td></tr>
+    <tr><td>Messages you send TO our bots (<code>/ask</code>, #ask-aria, DMs to the bot)</td><td>to generate the reply; a short excerpt is kept in an audit log for abuse prevention and quality</td><td>operator's private machine</td></tr>
+    <tr><td>Order info you share in <code>#order-here</code> (e.g., which bot you want)</td><td>to set up your service</td><td>Discord + operator's private machine</td></tr>
+    <tr><td>Subscription status (active/cancelled — via Stripe)</td><td>to grant/revoke subscriber roles</td><td>Stripe; role state in Discord</td></tr>
+  </table>
+
+  <h2>What we do NOT collect</h2>
+  <ul>
+    <li><strong>No payment card data.</strong> Payments are processed entirely by
+      <a href="https://stripe.com/privacy">Stripe</a>; we see subscription status and the email you give
+      Stripe, never card numbers.</li>
+    <li><strong>No message content from ordinary channels.</strong> The bots only process messages sent
+      <em>to them</em> (slash commands, the ask channel, DMs).</li>
+    <li>No tracking pixels, no analytics SDKs, no advertising identifiers.</li>
+  </ul>
+
+  <h2>How long we keep it</h2>
+  <p>Audit logs (who asked what, when, and moderation records) are kept only as long as needed for operating
+  and protecting the Service, then compacted or deleted. Cancelling your subscription removes your subscriber
+  role; you may additionally request deletion of your stored interaction data (see below).</p>
+
+  <h2>Who we share it with</h2>
+  <p><strong>Nobody</strong>, except: Discord (the platform the Service runs on), Stripe (payments), and where
+  required by law. We do not sell, rent, or trade any user data — ever.</p>
+
+  <h2>AI processing</h2>
+  <p>Some replies are generated by a <strong>locally hosted</strong> language model on the operator's own
+  hardware. Your questions to the bots are processed on that machine; they are <strong>not</strong> sent to
+  third-party AI providers.</p>
+
+  <h2>Your choices</h2>
+  <ul>
+    <li><strong>Access / deletion:</strong> email <a href="mailto:admin@ariasolutions.org">admin@ariasolutions.org</a>
+      (or ask in <code>#order-here</code>) to request a copy or deletion of interaction data tied to your
+      Discord ID.</li>
+    <li><strong>DMs:</strong> don't want the welcome DM? Disable DMs from server members; everything works
+      without it.</li>
+    <li>Leaving the server ends all live data collection about you.</li>
+  </ul>
+
+  <h2>Children</h2>
+  <p>The Service follows Discord's minimum age requirements and is not directed at children below them.</p>
+
+  <h2>Changes</h2>
+  <p>Material changes to this policy will be announced in <code>#announcements</code> with a new effective
+  date.</p>
+
+  <p class="note">Written in good faith, in plain language, and not yet reviewed by an attorney.</p>
+</main>
+</body>
+</html>

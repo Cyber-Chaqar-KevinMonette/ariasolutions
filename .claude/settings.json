@@ -1,0 +1,18 @@
+{
+  "$comment": "Scoped Bash allow-rule for the hardware-liberation zip cleanup (Kevin, 2026-07-25): the 225 zips in zippedfolders/ had their value extracted+integrated into Aria's codebase before this was added. Deliberately narrow — only rm of *.zip in this one folder, not a general rm grant.",
+  "permissions": {
+    "allow": [
+      "Bash(rm -f -- /home/kmon/AA-Erebo/Plans/p-plans-hardware-liberation/zippedfolders/*.zip)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./**/secrets/**)",
+      "Read(./**/*.pem)",
+      "Read(./**/id_rsa*)",
+      "Read(./**/credentials*)",
+      "Read(./sov-backups/**)"
+    ]
+  },
+  "$deny_comment": "token-optimizer-security-d (Kevin, 2026-08-01): no permissions.deny existed anywhere in this monorepo despite sov-backups/ holding real, live secrets (Discord webhook URLs, confirmed this session -- see .gitignore's own 'real, live secrets live here... never commit' comment). .env.example is deliberately NOT denied (it's a template, useful reference, no real secret). Narrow paths only, per the audit's own warning: a broad deny on a path Claude actively reads costs tokens (repeated denial feedback) instead of saving them."
+}

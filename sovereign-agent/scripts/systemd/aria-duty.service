@@ -1,0 +1,26 @@
+# aria-duty.service — her shift, forever (LIVE duty loop)
+# ========================================================
+# Fleet deliveries (the Scout!), presence heartbeat, ads (opt-in), daily
+# books + Scout Report, health flags, auto self-map. Dry-run is the CLI
+# default; this unit runs --live because enabling the unit IS the consent.
+#
+# Install (or just run scripts/systemd/install.sh):
+#   cp scripts/systemd/aria-duty.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now aria-duty.service
+# Stop everything fast:  systemctl --user stop aria-duty aria-bot
+# (PROTOCOL-ZERO also halts the loop from inside: `sovereign halt`.)
+
+[Unit]
+Description=Aria — shop duty loop (fleet + presence + scout voice)
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/kmon/AA-Erebo/sovereign-agent
+ExecStart=/home/kmon/AA-Erebo/sovereign-agent/.venv/bin/sov shop duty --live
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=default.target

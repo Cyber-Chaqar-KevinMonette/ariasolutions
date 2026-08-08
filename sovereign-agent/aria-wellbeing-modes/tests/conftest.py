@@ -1,0 +1,27 @@
+"""Patch-only module — everything it touches (modes_crown/stances.py,
+session_bridge.py, modes_crown/observatory.py) is already live, so no
+extend_paths is needed. Per-test SETTINGS isolation only (staged-only —
+the live suite has its own autouse isolated_paths)."""
+from pathlib import Path
+
+import pytest
+
+
+@pytest.fixture(autouse=True)
+def isolated_paths(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    from sovereign_agent.config import SETTINGS, Paths
+
+    config_dir = tmp_path / "config" / "sovereign-agent"
+    data_dir = tmp_path / "data" / "sovereign-agent"
+    config_dir.mkdir(parents=True)
+    data_dir.mkdir(parents=True)
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path / "data"))
+    new_paths = Paths(config_dir=config_dir, data_dir=data_dir)
+    new_paths.ensure()
+    original = SETTINGS.paths
+    object.__setattr__(SETTINGS, "paths", new_paths)
+    try:
+        yield
+    finally:
+        object.__setattr__(SETTINGS, "paths", original)

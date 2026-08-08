@@ -1,0 +1,21 @@
+# sovereign-agent-seal.timer — fires daily at 00:05 UTC
+#
+# Install (after sovereign-agent-seal.service is in place):
+#   cp scripts/sovereign-agent-seal.timer ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now sovereign-agent-seal.timer
+#
+# Inspect:
+#   systemctl --user list-timers
+
+[Unit]
+Description=Sovereign Agent — daily seal at 00:05 UTC
+
+[Timer]
+# OnCalendar uses local time by default; UTC=true forces UTC interpretation
+OnCalendar=*-*-* 00:05:00 UTC
+Persistent=true
+Unit=sovereign-agent-seal.service
+
+[Install]
+WantedBy=timers.target

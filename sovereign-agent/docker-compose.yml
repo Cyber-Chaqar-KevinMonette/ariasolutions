@@ -1,0 +1,41 @@
+services:
+  aria:
+    build: .
+    image: sovereign-agent:latest
+    container_name: aria
+    restart: unless-stopped
+
+    environment:
+      # Point Ollama at host machine (where the GPU lives)
+      OLLAMA_HOST: "${OLLAMA_HOST:-http://host-gateway:11434}"
+      # Override via .env
+      SOV_MODEL: "${SOV_MODEL:-qwen3:8b}"
+      SOV_LOG_LEVEL: "${SOV_LOG_LEVEL:-WARNING}"
+
+    ports:
+      # MCP SSE server — connect Claude Desktop or any MCP client here
+      - "${MCP_PORT:-8765}:8765"
+
+    volumes:
+      # Config (schedule.yaml, settings, HALT file)
+      - aria_config:/data/config/sovereign-agent
+      # Data (atoms.db, vault, stewardship logs)
+      - aria_data:/data/storage/sovereign-agent
+      # Home dir (git config, etc.)
+      - aria_home:/data/home
+
+    extra_hosts:
+      # Make host.docker.internal work on Linux
+      - "host-gateway:host-gateway"
+
+    # Override command for interactive TUI cockpit:
+    # docker compose run --rm aria sov-chat
+    command: ["sov-mcp", "--transport", "sse", "--host", "0.0.0.0", "--port", "8765"]
+
+volumes:
+  aria_config:
+    driver: local
+  aria_data:
+    driver: local
+  aria_home:
+    driver: local

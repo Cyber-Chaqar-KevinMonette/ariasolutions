@@ -1,0 +1,10 @@
+# sovereign-agent-seal.service — runs once per invocation
+# Used by sovereign-agent-seal.timer
+
+[Unit]
+Description=Sovereign Agent — daily Merkle seal job
+After=ollama.service
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/share/sovereign-agent/venv/bin/python -m sovereign_agent.seal

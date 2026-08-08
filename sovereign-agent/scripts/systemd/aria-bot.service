@@ -1,0 +1,26 @@
+# aria-bot.service — Aria's Discord admin bot, forever
+# =====================================================
+# The gateway process: slash commands (/ask /ma /scout /setup-shop …),
+# free chat, welcomes, the Scout Panel. Survives logouts and reboots.
+#
+# Install (or just run scripts/systemd/install.sh):
+#   cp scripts/systemd/aria-bot.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now aria-bot.service
+# Logs:  journalctl --user -u aria-bot -f
+
+[Unit]
+Description=Aria — Discord admin bot (BigKev's Bot Shop)
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/kmon/AA-Erebo/sovereign-agent
+ExecStart=/home/kmon/AA-Erebo/sovereign-agent/.venv/bin/sov discord-admin run
+Restart=always
+RestartSec=15
+# the CLI vault autoload reads ~/.config/sovereign-agent/shop.env itself —
+# no secrets in this unit, ever.
+
+[Install]
+WantedBy=default.target

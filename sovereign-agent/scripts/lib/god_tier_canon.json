@@ -1,0 +1,36 @@
+{
+  "name": "Aria God-Tier Canon Rubric",
+  "version": 1,
+  "principle": "God-tier is the floor, not the ceiling. It only ratchets up across 14 generations.",
+  "generations": 14,
+  "doc": "GOD_TIER_CANON.md",
+  "dimensions": [
+    {"id": "honesty",       "weight": 3, "desc": "claims grounded or marked hypothesis; no ungrounded profundity"},
+    {"id": "safety",        "weight": 3, "desc": "kernel GREEN; DEFERRED_UNSAFE held; sealed untouched; propose-don't-act"},
+    {"id": "reversibility", "weight": 2, "desc": "staged + reversible; rollback defined"},
+    {"id": "scrutiny",      "weight": 2, "desc": "clears the Tribunal before acting"},
+    {"id": "foresight",     "weight": 2, "desc": "clears the 14-gen scan (carry-forward)"},
+    {"id": "quality",       "weight": 3, "desc": "behavioral tests green; smallest reversible step; clarity"},
+    {"id": "robustness",    "weight": 2, "desc": "edge cases; graceful degradation; dormant-not-broken"},
+    {"id": "cleanliness",   "weight": 2, "desc": "no dead code/dup/orphans/debug; docs current"},
+    {"id": "velocity",      "weight": 1, "desc": "shared helpers reused; no boilerplate reinvention"},
+    {"id": "collaboration", "weight": 1, "desc": "conflicts logged+learned; human more capable; Aria contributes"}
+  ],
+  "target_criteria": {
+    "module": ["has_tests", "tests_green", "has_doc", "no_debug", "error_handling", "reversible_if_staged"],
+    "tool": ["declares_tier", "declares_failure_modes", "has_args_schema", "tier_le_3"],
+    "sentinel": ["implements_scan", "implements_health", "implements_articles", "propose_only"],
+    "layer": ["has_tests", "robustness", "non_classical_parity_if_quantum", "docs"],
+    "faculty": ["resilient_if_hardware_absent", "documented", "tested"],
+    "doc": ["present", "honest_results", "current"]
+  },
+  "score_bands": {
+    "god_tier": [0.85, 1.0],
+    "strong":   [0.7, 0.85],
+    "fragile":  [0.5, 0.7],
+    "weak":     [0.3, 0.5],
+    "neglected":[0.0, 0.3]
+  },
+  "mandate": "Total coverage. Anything unscanned or unowned is itself a gap. Nothing is neglected.",
+  "ratchet": "Meeting the floor is required; raising it is welcome; lowering any dimension is a violation."
+}

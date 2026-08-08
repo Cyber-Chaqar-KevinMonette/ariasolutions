@@ -1,0 +1,49 @@
+# Claude Code hook state — local git-status snapshots, not project data
+.claude/continuity/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+dist/
+build/
+
+# uv / venvs
+.venv/
+venv/
+.uv/
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+*.swp
+*.swo
+
+# Test / coverage artifacts
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Agent runtime data — never commit
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
+events/*.jsonl
+events.jsonl
+secret.key
+backlog.yaml
+~/.config/sovereign-agent/
+*.bak
+*.bak.*
+aria-*/.safe_apply_snapshot/
+aria-*/.applied_ok
+
+# staged-module apply backups — local safety copies of live src/, never source
+aria-*/backups/
