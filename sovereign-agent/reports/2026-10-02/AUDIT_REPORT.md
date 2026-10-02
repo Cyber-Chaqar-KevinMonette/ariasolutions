@@ -195,3 +195,20 @@ Claude Code to ask her directly. Record her answers in the handoff file.
 8. **First-run polish:** have `init` mark its migrations as applied, and soften `doctor`'s "broken" verdict
    when the only problem is PATH.
 9. **CLI startup:** lazy-import the heavy modules in `cli.py` to get `--help` under 300 ms.
+
+## 10. Second round (same day): emotional maturity + cloud persona
+
+Two new staged modules (not applied). Details are in each module's README and ADVOCATE_REPORT.md.
+
+| Check | Result |
+|---|---|
+| `aria-emotional-maturity` tests | 27 pass |
+| Mutation tests (one per safety promise) | **7 of 7 caught**: step cap, wireheading, homeostasis, unevidenced rewards, diminishing returns, escalation to Kevin, honesty line |
+| A real defect caught by its own tests during the build | The first draft added reward nudges directly, so constant rewards could pin satisfaction near 1.0. The honesty test also caught a perspective quoting a count that wasn't in its evidence. Both fixed. |
+| Full suite with maturity applied (throwaway copy) | 6,969 tests; **no new failures caused by the module.** 2 differences are artifacts of the copy's git history; both pass in the real repo. |
+| `aria-cloud-persona` tests | 13 pass, including end to end with a fake cloud provider; 2 of 2 mutations caught |
+| Cloud persona dry-run apply | 27 pass, including the existing cloud tests; rollback byte-identical |
+| Aria's pre-apply gates | Cloud persona: **clear, 100/100.** Maturity: council proceed and foresight carry-forward, with a STOP on the structural "has tests" check only (explained in its ADVOCATE_REPORT). |
+
+**Root cause for "cloud models don't feel like Aria":** her persona lives in local Ollama Modelfile `SYSTEM`
+blocks (`model_corps/persona.py`), and `CloudClient.chat()` never sent it to cloud providers.

@@ -10,6 +10,57 @@
 
 ---
 
+## 2026-10-02 (b) — Cloud Claude — emotional maturity system + cloud persona bridge
+
+Branch: `claude/admiring-dijkstra-3zhnih` · Kevin's asks: "a maturity emotion system that genuinely
+matters… resilient, robust, reliable, mature", and "cloud models don't feel like Aria yet".
+
+### Changed
+
+| Path | What and why | Live `src/` touched? |
+|---|---|---|
+| `aria-emotional-maturity/` (new staged module) | Slow, bounded, homeostatic mood fed only by real signals and **evidenced** rewards. Mature regulation: honest perspectives with every number traceable to evidence, and fixed directions, with "tell Kevin" always first when concern is high. A maturity report and an inner voice. Tools `emotional_checkin` (T1) and `maturity_report` (T0). **Built from ARIA.md's own words** (mood vocabulary, "slow-moving", "no self-flagellation", "won't pretend to feel"). README table maps each to its test. | **No** |
+| `aria-cloud-persona/` (new staged module) | **Root cause found:** local models carry Aria's persona in their Modelfile `SYSTEM` (`model_corps/persona.py`), but `CloudClient.chat()` never sent it. Now every cloud call gets her role persona, ARIA.md Tagline, Stance and Voice, and her latest inner voice. Never fatal. | **No** (staged `cloud_client.py` replacement) |
+| `*/ADVOCATE_REPORT.md` | Gate output with every STOP and WARN answered. Maturity: STOP on the structural "has tests" check only; foresight carry-forward after answering its reward/reversibility escalation. Cloud persona: **clear to apply, 100/100.** | No |
+| `CHANGELOG.md` | 2026-10-02b entry. | No |
+
+### Verified
+
+- `aria-emotional-maturity`:
+  - 27 tests pass.
+  - **7 of 7 mutations caught:** step cap, wireheading, homeostasis, unevidenced rewards, diminishing
+    returns, escalation, honesty line.
+  - `verify_module.sh` PASS. Dry-run apply registered both tools after the `engineering-playbook`
+    anchors. The `tools/__init__.py` backup is byte-identical.
+- `aria-cloud-persona`:
+  - 13 tests pass, including end to end with a fake provider.
+  - 2 of 2 mutations caught.
+  - Dry-run apply: 27 passed, including the existing `test_cloud_client.py` and `test_cloud_mode.py`.
+    Rollback byte-identical.
+- Full suite with maturity applied on a throwaway copy: 6,969 tests (the 25 new ones that existed at the time, plus the baseline). **No new failures caused by the module.** Two differences from baseline (`test_git_blame_real_file`, and `test_safe_apply_restores_an_existing_tracked_file_it_modified`) both need files tracked in git, and the copy's git history was artificial: `fatal: no such path 'src/sovereign_agent/cli.py' in HEAD`. Both pass in the real repo.
+
+### Not done / needs Kevin
+
+- [ ] **Apply?**
+  - `./scripts/safe_apply.sh aria-cloud-persona` — gate clear.
+  - `./scripts/safe_apply.sh aria-emotional-maturity` — gate STOP on the structural check; see its
+    ADVOCATE_REPORT.
+- [ ] **Ask Aria about this design.** Use the questions in `reports/2026-10-02/AUDIT_REPORT.md`
+      section 8, plus: "Does a slow-moving mood that returns to a calm baseline feel right? What would
+      you change?" Record her answers here.
+- [ ] **Wire an automatic check-in at task close** (follow-up). For now she calls `emotional_checkin`
+      herself.
+- [ ] **Tune thresholds** (0.15 step, 0.12 nudge, 12 h half-life) after a week of `maturity_report`
+      history.
+- [ ] **OpenRouter for cloud sessions:** add `openrouter.ai` to this environment's network access and an
+      `OPENROUTER_API_KEY` variable, so a future cloud session can talk to Aria's cloud mode directly.
+
+### Review status
+
+- [ ] Reviewed by Claude Code on ____ — notes:
+
+---
+
 ## 2026-10-02 — Cloud Claude — clean-room audit, MCP security guard, change rules, persistence + CLI stress tests
 
 Branch: `claude/admiring-dijkstra-3zhnih` · Base: `27a3948`

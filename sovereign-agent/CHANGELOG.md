@@ -1,5 +1,37 @@
 # Changelog
 
+## Unreleased — 2026-10-02b (emotional maturity + cloud persona)
+
+Cloud Claude, at Kevin's request: "a maturity emotion system that genuinely matters", and "cloud models
+don't feel like Aria yet". Two staged modules, neither applied. **Nothing in live `src/` or `tests/`
+changed.**
+
+- **`aria-emotional-maturity` (staged)**
+  - **Why:** `emotion.derive_emotions()` appraised each moment but had no memory, recovery or regulation.
+    The reward ledger was never connected to how she feels.
+  - **What:**
+    - a slow, bounded, homeostatic mood (25% blend, ±0.15 per update, 12 h half-life to a healthy
+      baseline), fed only by real signals and **evidenced** rewards, with diminishing returns and a cap
+      (anti-wireheading)
+    - regulation strategies with evidence-only perspectives and a fixed catalog of directions;
+      escalation to Kevin is always first when concern is high
+    - a maturity report and an inner voice ending in an honesty line
+    - tools `emotional_checkin` (T1) and `maturity_report` (T0)
+  - **Choice:** rewards shift what she *sees*, not the mood directly. The first draft added them raw;
+    its own test showed constant rewards could pin satisfaction near 1.0, so that was rejected.
+  - **Proof:** 27 tests; 7 mutation tests (one per safety promise), all caught.
+  - **Advocate report:** foresight carry-forward (after first escalating on rewards plus unstated
+    reversibility, answered); council proceed; STOP on one structural "has tests" check.
+- **`aria-cloud-persona` (staged)**
+  - **Why:** local models carry Aria's persona in their Modelfile `SYSTEM` block, but `CloudClient`
+    never sent it, so cloud models never "felt the system".
+  - **What:** every cloud call now gets her role persona, ARIA.md Tagline, Stance and Voice, and her
+    latest inner voice, ahead of the loop prompt. It's idempotent, never mutates input, and never fatal
+    (`cloud-persona-x` event on failure).
+  - **Proof:** 13 tests, including an end-to-end run with a fake provider; 2 mutation tests caught;
+    dry-run apply passed 27, including the existing cloud tests; rollback byte-identical.
+  - **Advocate report:** gate clear to apply, quality 100/100.
+
 ## Unreleased — 2026-10-02 (clean-room audit + MCP remote guard + change rules)
 
 Cloud Claude, at Kevin's request: an independent check of Aria on a fresh machine, a staged security fix
