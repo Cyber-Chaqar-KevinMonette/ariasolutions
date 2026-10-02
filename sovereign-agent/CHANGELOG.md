@@ -1,5 +1,35 @@
 # Changelog
 
+## Unreleased — 2026-10-02 (clean-room audit + MCP remote guard + change rules)
+
+Cloud Claude, at Kevin's request: an independent check of Aria on a fresh machine, a staged security fix
+for the MCP bridge, and the rules every future change follows. **Nothing in live `src/` or `tests/`
+changed.** Full detail and reproduction scripts are in `reports/2026-10-02/`; the handoff is in
+`FOR_CLAUDE_CODE_FROM_CLOUD_CLAUDE.md`.
+
+- **`aria-mcp-remote-guard` (staged, not applied)**
+  - **Why:** the live `sov-mcp` HTTP server answered 127.0.0.1 with no credentials (200) and rejected
+    tunneled hosts (421).
+  - **What:** network transports now require `ARIA_MCP_TOKEN` (32+ characters) or refuse to start. Remote
+    clients are read-only by default (`ARIA_MCP_ALLOW_WRITE` / `ARIA_MCP_ALLOW_ASK` to opt in). Tunnel
+    hosts are allow-listed via `ARIA_MCP_PUBLIC_HOSTS`. Tokens are checked in constant time.
+  - **Observability:** refusals and starts are audited to the event log, with denials rate-limited.
+  - **Proof:** 21 tests; guard removed → 3 fail; dry-run apply → 28 pass, and rollback is byte-identical.
+  - **Advocate report:** the gate says STOP on one structural "has tests" check, answered in
+    `ADVOCATE_REPORT.md`.
+- **`CHANGE_RULES.md` (new) + `CLAUDE.md` pointer:** a change ships with tests, changelog, handoff, an
+  audit report (when testing or reviewing) and an advocate report (staged modules). Every step records why,
+  evidence, choice and proof.
+- **`FOR_CLAUDE_CODE_FROM_CLOUD_CLAUDE.md` (new):** the cross-session handoff log.
+- **Audit findings** (`reports/2026-10-02/AUDIT_REPORT.md`):
+  - **Tests:** 6,944, 98.0% pass; the failures are classified.
+  - **Persistence:** 9/9 (a SIGKILL mid-write over 27k events left zero corruption).
+  - **CLI:** 16/16 across 99 commands.
+  - **Missing dependency:** `discord.py` is used but not declared.
+  - **Time bombs:** 3 tests (a patch is proposed).
+  - **Claims:** the "quantum superposition processor" is word-overlap matching, identical in 20,000 of
+    20,000 cases. Its "1000×" divides by hard-coded constants.
+
 ## Unreleased — 2026-07-26 (◫ the per-user panel + task guide + full observability round)
 
 Kevin: glyph-safety sweep, cockpit layout polish, memory-pane reward

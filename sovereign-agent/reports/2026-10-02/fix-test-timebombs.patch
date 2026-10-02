@@ -1,0 +1,68 @@
+diff --git a/tests/test_impulse_tools.py b/tests/test_impulse_tools.py
+index 7cdf58d..4823eb4 100644
+--- a/tests/test_impulse_tools.py
++++ b/tests/test_impulse_tools.py
+@@ -6,6 +6,7 @@ from __future__ import annotations
+ 
+ import json
+ import sqlite3
++from datetime import datetime, timedelta, timezone
+ from pathlib import Path
+ from unittest.mock import patch
+ 
+@@ -59,7 +60,10 @@ def _patch_db(db_path):
+     )
+ 
+ 
+-def _insert_atom(conn, atom_type: str, content: dict, created_at: str = "2026-06-20T10:00:00Z"):
++def _insert_atom(conn, atom_type: str, content: dict, created_at: str | None = None):
++    # default to one day ago, so atoms always fall inside the tools' rolling windows
++    if created_at is None:
++        created_at = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+     atom_id = _ulid()
+     conn.execute(
+         "INSERT INTO atoms (atom_id, type, summary, content_ref, created_at) VALUES (?, ?, ?, ?, ?)",
+diff --git a/tests/test_proof_tools.py b/tests/test_proof_tools.py
+index 2bc70f1..e44faa2 100644
+--- a/tests/test_proof_tools.py
++++ b/tests/test_proof_tools.py
+@@ -6,6 +6,7 @@ from __future__ import annotations
+ 
+ import json
+ import sqlite3
++from datetime import datetime, timedelta, timezone
+ from pathlib import Path
+ from unittest.mock import patch
+ 
+@@ -311,17 +312,19 @@ async def test_giving_ledger_counts_experience_and_proof(db):
+ @pytest.mark.asyncio
+ async def test_giving_ledger_most_generous_day(db):
+     db_path, conn = db
+-    # 3 atoms today, 1 yesterday
++    # 3 atoms today, 1 yesterday — relative to now, so the 30-day window always contains them
++    today = datetime.now(timezone.utc).replace(hour=10, minute=0, second=0, microsecond=0)
++    yesterday = today - timedelta(days=1)
+     for i in range(3):
+         conn.execute(
+             "INSERT INTO atoms (atom_id, type, summary, content_ref, created_at, created_by) "
+             "VALUES (?, ?, ?, ?, ?, '{}')",
+-            (f"G{i:03d}", "experience", "today", '{"content": "{}"}', "2026-06-20T10:00:00Z"),
++            (f"G{i:03d}", "experience", "today", '{"content": "{}"}', today.strftime("%Y-%m-%dT%H:%M:%SZ")),
+         )
+     conn.execute(
+         "INSERT INTO atoms (atom_id, type, summary, content_ref, created_at, created_by) "
+         "VALUES (?, ?, ?, ?, ?, '{}')",
+-        ("G003", "experience", "yesterday", '{"content": "{}"}', "2026-06-19T10:00:00Z"),
++        ("G003", "experience", "yesterday", '{"content": "{}"}', yesterday.strftime("%Y-%m-%dT%H:%M:%SZ")),
+     )
+     conn.commit()
+ 
+@@ -330,7 +333,7 @@ async def test_giving_ledger_most_generous_day(db):
+     with _patch_db(db_path):
+         result = await tool.execute(tool.Args(days=30), trace_id="t11")
+ 
+-    assert result.output["most_generous_day"] == "2026-06-20"
++    assert result.output["most_generous_day"] == today.strftime("%Y-%m-%d")
+ 
+ 
+ @pytest.mark.asyncio

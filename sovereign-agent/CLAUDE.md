@@ -40,6 +40,15 @@ Features are staged as **`aria-<name>/` folders** with an `apply_<name>.sh` scri
 editing `src/` in place — full detail (scaffolding, apply/verify workflow) lives in `.claude/PLAYBOOK.md`,
 which exists specifically to hold this how-to. **Do not mutate the running system in place.**
 
+## Change discipline — every change ships with tests, changelog, and handoff
+
+Read **`CHANGE_RULES.md`** (binding). In short: a change isn't done until its tests are updated in the
+same change, `CHANGELOG.md` has an entry, `FOR_CLAUDE_CODE_FROM_CLOUD_CLAUDE.md` has a handoff entry,
+any testing or review has an audit report in `reports/<date>/`, and every staged module has an advocate
+report (`pre_apply_gate.sh` output, every STOP/WARN answered). Every step records why, evidence, choice
+and proof.
+At session start, read the newest entries in that handoff file and review anything marked unreviewed.
+
 ## Don't break the running cockpit
 
 Do not edit files while `sovereign cockpit` is running against them. Assume the human stops the cockpit
