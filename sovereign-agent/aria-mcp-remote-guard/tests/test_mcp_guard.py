@@ -175,7 +175,9 @@ def remote_app():
     from starlette.testclient import TestClient
 
     server = _staged_server()
-    policy = RemotePolicy(transport="streamable-http", host="127.0.0.1", token=TOKEN,
+    # The server's OWN RemotePolicy class: build_remote_app checks isinstance, and in a full run another test
+    # can drop sovereign_agent.mcp_guard from sys.modules, leaving this file's import a different class object.
+    policy = server.RemotePolicy(transport="streamable-http", host="127.0.0.1", token=TOKEN,
                           public_hosts=("aria.example.com",))
     app = server.build_remote_app(policy)
     with TestClient(app, base_url="https://aria.example.com") as client:
@@ -272,8 +274,9 @@ def test_bad_inputs_are_rejected():
         tool_allowed("", RemotePolicy())
     with pytest.raises(TypeError):
         validate("not a policy")
+    server = _staged_server()
     with pytest.raises(ValueError):
-        _staged_server().build_remote_app(RemotePolicy())  # stdio policy has no remote app
+        server.build_remote_app(server.RemotePolicy())  # stdio policy has no remote app
 
 
 # ── default-deny: every tool classified, unclassified tools refused remotely ─

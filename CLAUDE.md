@@ -19,7 +19,10 @@ Run commands from `sovereign-agent/` with `.venv/bin/python` (create it with `uv
 - **Website source (ariasolutions.org):** `sovereign-agent/web/` in Erebo-Aria (pushed 2026-10-02; React/TSX;
   pages in `web/src/pages/public/`, e.g. `CoursesPage.tsx`, `StorePage.tsx`, `TermsPage.tsx`).
   **Hosted on Cloudflare Pages**, project `ariasolutions` (`web/wrangler.toml`: build output `dist`, D1
-  database `aria-orders`, R2 bucket `aria-vault`). Secrets are set with
+  database `aria-orders`, R2 bucket `aria-vault`). **It deploys two ways:** `web/deploy.sh` from Kevin's
+  machine, and Erebo-Aria's `.github/workflows/deploy-pages.yml`, which deploys `main` once CI is fully
+  green. So merging to Erebo-Aria `main` can deploy the site. CI also requires the committed `web/dist/` to
+  match a fresh build. Secrets are set with
   `npx wrangler pages secret put … --project-name=ariasolutions`, never committed. Northwest Registered
   Agent provides the domain and email only.
 - **Pin `mcp>=1.0,<2`.** mcp 2.x renamed FastMCP and breaks `sov-mcp` on import. A fresh unpinned install
@@ -37,12 +40,12 @@ wrong length for a real key, sequential or "SUPER…" text, or an explicit place
 
 | File (Erebo-Aria and/or this snapshot) | Fake value pattern |
 |---|---|
-| `sovereign-agent/tests/test_ask_guard.py` | `sk_live_a1B2c3D4…` |
-| `sovereign-agent/tests/test_bookkeeping.py` | `rk_live_SUPERSECRET` |
+| `sovereign-agent/tests/test_ask_guard.py` | `sk_live_a1B2…` |
+| `sovereign-agent/tests/test_bookkeeping.py` | `rk_live_SUPER…` |
 | `sovereign-agent/tests/test_health.py`, `aria-cred-vault/tests/test_health.py` | `sk_live_51AB…` (36 chars; real Stripe keys are 100+), Discord webhook `…/999/SUPERSECRETTOKEN` |
 | `sovereign-agent/aria-dash-keys/tests/test_dash_keys.py` | `sk_live_SUPER…` |
-| `tests/test_scanner_tier_a.py`, `aria-scanner-tier-a/tests/…` | `AKIAABCDEFGHIJKLMNOP` |
-| `aria-online/PLACEHOLDERS.md`, `aria-online/src/aria_online/config.py` | `whsec_PLACEHOLDER…` |
+| `tests/test_scanner_tier_a.py`, `aria-scanner-tier-a/tests/…` | `AKIAABCD…` (fake AWS id) |
+| `aria-online/PLACEHOLDERS.md`, `aria-online/src/aria_online/config.py` | `whsec_PLACE…` |
 
 A match **outside** this list is a real finding. Rotate the key and tell Kevin. (Separately: the Stripe key
 that appeared in a screenshot in July is a real one and is still listed as "rotate" in `SPRINT_STATE.md`.)
