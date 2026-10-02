@@ -10,6 +10,34 @@
 
 ---
 
+## 2026-10-02 (c) — Cloud Claude — found the website source; launch readiness review
+
+### Found
+- **The website source is `~/AA-Erebo/sovereign-agent/web/`** (Kevin's grep found `CoursesPage.tsx`,
+  `StorePage.tsx`, `TermsPage.tsx`, `OrderPage.tsx`, `LearnPage.tsx`, … in `web/src/pages/public/`).
+  - It's **never been committed.** Neither `ariasolutions` nor `Erebo-Aria` on GitHub has `web/`, and
+    `.gitignore` doesn't exclude it. It exists only on Kevin's laptop.
+  - `sovereign-agent/site/` holds only a compiled build (Erebo-Aria commit "Deploy new React marketing
+    frontend to site/", 2026-08-08), including `.js.map` source maps. That build has no `/courses` or
+    `/store` routes, so the live site is a newer build.
+- **The `ariasolutions` GitHub repo is public.** Kevin is making it private. No personal address or
+  secrets were found in it.
+
+### Needs Claude Code on Kevin's machine (in order)
+- [ ] In `~/AA-Erebo`, run `git remote -v` to confirm which repo it pushes to.
+- [ ] Check `web/` for `.env` and other secret files. Make sure `web/.gitignore` excludes `node_modules/`,
+      `dist/` and `.env*`.
+- [ ] **Only after the target repo is private:** commit and push `sovereign-agent/web/`.
+- [ ] Find where ariasolutions.org is hosted: the DNS records at Northwest (the CNAME target says
+      Cloudflare Pages, Netlify, Vercel, GitHub Pages or Northwest).
+- [ ] Then work through the launch review's website items: LLC name and Kentucky governing law in
+      `TermsPage.tsx` and the privacy page, a `/refunds` page, the footer, `/courses` and `/store` copy.
+
+### Review status
+- [ ] Reviewed by Claude Code on ____ — notes:
+
+---
+
 ## 2026-10-02 (b) — Cloud Claude — emotional maturity system + cloud persona bridge
 
 Branch: `claude/admiring-dijkstra-3zhnih` · Kevin's asks: "a maturity emotion system that genuinely
