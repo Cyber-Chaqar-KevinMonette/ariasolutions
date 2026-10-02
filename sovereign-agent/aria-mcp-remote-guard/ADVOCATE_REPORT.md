@@ -13,17 +13,21 @@ to apply. Every STOP and WARN is answered below.
 | Integrity gate | WARN, "names no one it affects" | The README has a "Who it affects" section (Kevin, Aria, anyone who finds the URL). The heuristic didn't pick it up; left as is rather than rewording to game it. |
 | Timeout gate | PASS | — |
 
-## Raw gate output
+## Latest run (v6.5.0 port)
+
+Re-run 2026-10-02 after the **v6.5.0 port and default-deny gate**: Tribunal proceed-with-guards; council **proceed** (0.5); foresight carry-forward; quality 95/100, BLOCK only on the structural "has tests" check for the new `middleware.py`; **grounding PASS** (was WARN); integrity WARN; timeout PASS.
+
+## Raw gate output (latest run)
 
 ```
 ════════ PRE-APPLY GATE: aria-mcp-remote-guard ════════
 ── Tribunal ──
-   VERDICT: proceed-with-guards  (confidence 0.7)  · grounding: mixed
+   VERDICT: proceed-with-guards  (confidence 0.7)  · grounding: grounded
    Material risks present but addressable. Proceed with the named guards.
    risk: [stewardship] Sweeping scope — large blast radius. Prefer the smallest reversible step.
    → [blast-radius] Shrink the change to the smallest reversible step; expand only after it's vindicated.
 ── Advocate Spectrum (council of ten) ──
-   VERDICT: proceed  · council 0.44  · champions ['healer', 'artisan']  · opposed []
+   VERDICT: proceed  · council 0.5  · champions ['healer', 'artisan']  · opposed []
 ── 14-Generation Foresight ──
    VERDICT: carry-forward  · base 1.4 · gen7 1.05 · gen14 0.7
    signals: {'lock_in': 0, 'reversible': True, 'value_markers': 2, 'blast_radius': 1, 'value_drift_risk': False}
@@ -31,11 +35,9 @@ to apply. Every STOP and WARN is answered below.
    ✗ quality gate: BLOCK · 4 file(s) · 95.0/100
   · BLOCK: aria-mcp-remote-guard/payload/src/sovereign_agent/mcp_guard/middleware.py failed critical check(s): has tests
 ── Grounding Gate ──
-   ⚠ grounding gate: WARN · verdict=mixed · 0.59
-  · text verdict is mixed — some claims unanchored
+   ✓ grounding gate: PASS · verdict=grounded · 0.60
 ── Integrity Gate ──
    ⚠ integrity gate: WARN · 0.63
-  · grounding: text verdict is mixed — some claims unanchored
   · witness: names no one it affects — surface the impact
 ── Timeout Gate ──
    ✓ timeout gate: PASS · 0 unexplained

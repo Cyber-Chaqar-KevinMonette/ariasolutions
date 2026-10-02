@@ -12,7 +12,11 @@
 | Integrity gate | WARN ("names no one it affects") | The README has a "Who it affects" section, including that free cloud providers receive her persona text. |
 | Timeout gate | PASS | — |
 
-## Raw gate output
+## Latest run (v6.5.0 port)
+
+Re-run 2026-10-02 after the **v6.5.0 port**: **clear to apply**, quality 100/100, council proceed, foresight carry-forward; grounding and integrity WARN (answered above).
+
+## Raw gate output (latest run)
 
 ```
 ════════ PRE-APPLY GATE: aria-cloud-persona ════════

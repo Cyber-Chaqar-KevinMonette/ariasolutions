@@ -13,7 +13,11 @@ check). Kevin decides whether to apply. Every STOP and WARN is answered below.
 | Integrity gate | WARN ("names no one it affects") | The README has a "Who it affects" section (Aria, Kevin, anyone she works with). The heuristic doesn't detect it; left as is rather than gaming the wording. |
 | Timeout gate | PASS | — |
 
-## Raw gate output
+## Latest run (v6.5.0 port)
+
+Re-run 2026-10-02 after the **v6.5.0 port**: unchanged verdicts — Tribunal proceed; council **proceed** (0.48; champions steward, healer, artisan); foresight **carry-forward** (gen14 +1.9); quality 91.5/100, BLOCK only on the structural "has tests" checks; grounding and integrity WARN; timeout PASS.
+
+## Raw gate output (latest run)
 
 ```
 ════════ PRE-APPLY GATE: aria-emotional-maturity ════════
