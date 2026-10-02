@@ -23,7 +23,9 @@ def safe_emit_event(flag: str, **payload: Any) -> None:
 from .middleware import TokenGuard  # noqa: E402 — safe_emit_event must exist before submodules load
 from .policy import (  # noqa: E402
     AGENT_TOOLS,
+    CLASSIFIED_TOOLS,
     MIN_TOKEN_LENGTH,
+    REMOTE_READ_TOOLS,
     WRITE_TOOLS,
     RemotePolicy,
     allowed_hosts,
@@ -34,7 +36,9 @@ from .policy import (  # noqa: E402
 
 __all__ = [
     "AGENT_TOOLS",
+    "CLASSIFIED_TOOLS",
     "MIN_TOKEN_LENGTH",
+    "REMOTE_READ_TOOLS",
     "TRACE_ID",
     "WRITE_TOOLS",
     "RemotePolicy",

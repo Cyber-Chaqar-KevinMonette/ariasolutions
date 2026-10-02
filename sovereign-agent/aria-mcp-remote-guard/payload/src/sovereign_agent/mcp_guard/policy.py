@@ -23,9 +23,17 @@ from dataclasses import dataclass, field
 MIN_TOKEN_LENGTH = 32
 LOOPBACK_HOSTS = frozenset({"127.0.0.1", "localhost", "::1"})
 
-# Tools that change Aria's state, and tools that run her agent loop. Everything else is read-only.
+# Every MCP tool must be classified here. Remote clients get REMOTE_READ_TOOLS only; write and agent tools
+# need an explicit opt-in; anything unclassified is REFUSED remotely (default-deny), so a tool added later
+# is never exposed by accident. `test_every_registered_tool_is_classified` fails until a new tool is listed.
+REMOTE_READ_TOOLS = frozenset({
+    "aria_status", "git_week_summary", "giving_ledger", "hypothesis_queue", "institutional_impulse_check",
+    "node_vitals", "recent_learnings", "recent_reflections", "risk_register", "session_health",
+    "task_backlog", "value_proof_history", "waiting_on_you", "wedge_calibrator",
+})
 WRITE_TOOLS = frozenset({"record_proof_of_value"})
 AGENT_TOOLS = frozenset({"ask_aria"})
+CLASSIFIED_TOOLS = REMOTE_READ_TOOLS | WRITE_TOOLS | AGENT_TOOLS
 
 TRANSPORTS = frozenset({"stdio", "sse", "streamable-http"})
 
@@ -104,13 +112,18 @@ def tool_allowed(name: str, policy: RemotePolicy) -> tuple[bool, str]:
     if not name:
         raise ValueError("tool name must be non-empty")
     _require_policy(policy)
-    if not policy.remote:
+    if not policy.remote or name in REMOTE_READ_TOOLS:
         return True, ""
     reason = ""
-    if name in WRITE_TOOLS and not policy.allow_write:
-        reason = f"{name} is a write tool and is disabled for remote clients (set ARIA_MCP_ALLOW_WRITE=1)"
-    elif name in AGENT_TOOLS and not policy.allow_ask:
-        reason = f"{name} runs Aria's agent loop and is disabled for remote clients (set ARIA_MCP_ALLOW_ASK=1)"
+    if name in WRITE_TOOLS:
+        if not policy.allow_write:
+            reason = f"{name} is a write tool and is disabled for remote clients (set ARIA_MCP_ALLOW_WRITE=1)"
+    elif name in AGENT_TOOLS:
+        if not policy.allow_ask:
+            reason = f"{name} runs Aria's agent loop and is disabled for remote clients (set ARIA_MCP_ALLOW_ASK=1)"
+    else:
+        reason = (f"{name} is not classified as read-only, so it is disabled for remote clients "
+                  "(classify it in mcp_guard/policy.py)")
     if not reason:
         return True, ""
     from . import safe_emit_event

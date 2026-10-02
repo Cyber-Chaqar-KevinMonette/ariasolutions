@@ -30,6 +30,7 @@ from __future__ import annotations
 import asyncio
 import os
 import sys
+from collections import deque  # speaker-identity-d
 from pathlib import Path
 from typing import Optional
 
@@ -78,14 +79,23 @@ def _err(msg: str) -> dict:
 async def aria_status() -> dict:
     """Return Aria's version and overall operational status."""
     try:
-        from sovereign_agent.health import gather_health
-        rows = gather_health(Path(os.environ.get("HOME", "~")).expanduser())
-        ok_count = sum(1 for r in rows if r.get("level") == "ok")
+        from sovereign_agent.config import SETTINGS
+        from sovereign_agent.continuation import ContinuationStore
+        from sovereign_agent.dream import DreamStore
+        from sovereign_agent.health import run_full_scan
+
+        paths = SETTINGS.paths
+        cont_store = ContinuationStore(paths.continuations_dir)
+        dream_store = DreamStore(
+            root=paths.data_dir / "dreams",
+            work_root=paths.data_dir / "dream-sessions",
+        )
+        report = run_full_scan(cont_store, dream_store)
         return {
             "version": __version__,
-            "sentinel_count": len(rows),
-            "sentinels_ok": ok_count,
-            "sentinels_issues": len(rows) - ok_count,
+            "status": "ok" if report.ok else "issues",
+            "finding_count": len(report.findings),
+            "summary": report.summary_line(),
             "kernel": "Safety · Love · Flourishing",
         }
     except Exception as exc:
@@ -267,6 +277,15 @@ async def record_proof_of_value(
 # ── Conversational passthrough ────────────────────────────────────────────────
 
 
+# speaker-identity-d: in-process-only, per sov-mcp server lifetime -- NOT
+# durable across a restart, and deliberately so. Long-term memory is
+# already her atoms/reflections; this is short-term "what did we just say
+# to each other in THIS live exchange" continuity, the same scope a human
+# holds in their own head mid-conversation, nothing more.
+from sovereign_agent.speaker_identity import format_turn  # speaker-identity-d
+_ARIA_LIVE_HISTORY: "deque[str]" = deque(maxlen=8)  # speaker-identity-d
+
+
 @mcp.tool()
 async def ask_aria(question: str) -> str:
     """Ask Aria a question in natural language.
@@ -280,9 +299,12 @@ async def ask_aria(question: str) -> str:
     if refused := _refusal("ask_aria"):
         return refused
     try:
+        recent_args: list[str] = []
+        for turn in _ARIA_LIVE_HISTORY:
+            recent_args.extend(["--recent", turn])
         proc = await asyncio.create_subprocess_exec(
-            sys.executable, "-m", "sovereign_agent.cli", "ask", question,
-            "--no-color",
+            sys.executable, "-m", "sovereign_agent.cli", "ask",
+            "--speaker", "Claude", *recent_args, question,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
@@ -292,7 +314,10 @@ async def ask_aria(question: str) -> str:
         response = stdout.decode("utf-8", errors="replace").strip()
         if not response:
             response = stderr.decode("utf-8", errors="replace").strip()
-        return response or "(Aria returned an empty response)"
+        result = response or "(Aria returned an empty response)"
+        _ARIA_LIVE_HISTORY.append(format_turn("Claude", question))
+        _ARIA_LIVE_HISTORY.append(format_turn("Aria", result))
+        return result
     except asyncio.TimeoutError:
         return "Aria's response timed out after 120 seconds. Try a simpler question."
     except Exception as exc:
@@ -321,6 +346,71 @@ def kernel_doctrine() -> str:
 def version_info() -> str:
     """Current Aria version and platform info."""
     return f"sovereign-agent v{__version__}\nPlatform: {sys.platform}"
+
+
+# ── mcp-reach-d: what is she doing RIGHT NOW ─────────────────────────────────
+#
+# The twelve tools above all answer "what has she done". These four answer
+# "why did she stop", which is the question that actually came up. Each is
+# read-only and cheap — no model call, no lock — because a tool that costs a
+# model call to answer "are you stuck" is one nobody calls when it matters.
+
+
+@mcp.tool()
+async def session_health(limit: int = 5) -> dict:
+    """Recent sessions WITH their cost, per subtask.
+
+    `done/total` alone is what made 2026-08-13 unreadable: 0 of 7 beside
+    2,568,059 tokens is true and unactionable. The per-subtask iterations
+    and tokens are what turn it into 'five subtasks each ran to their own
+    ceiling and produced nothing', which is a diagnosis.
+
+    Use this first when an unattended run ended badly.
+    """
+    from sovereign_agent.mcp_reach import session_health as _f
+
+    return _f(limit)
+
+
+@mcp.tool()
+async def waiting_on_you() -> dict:
+    """Is Aria parked waiting for a human approval, and how long is left.
+
+    Gate 4 holds a subtask when it needs a tier the current mode does not
+    grant. The wait is BOUNDED — 600s, capped at half the session wall — so
+    the remaining time is half the answer: 'waiting' and 'waiting, 90
+    seconds left' call for different behaviour.
+    """
+    from sovereign_agent.mcp_reach import waiting_on_you as _f
+
+    return _f()
+
+
+@mcp.tool()
+async def node_vitals() -> dict:
+    """Per-qubit coherence for her nineteen nodes, and whether any is dying.
+
+    Kevin: 'No node should ever become fully classical because that is
+    basically quantum death or entropy suicide.' `alarm` is true when any
+    node has fallen below the death floor on BOTH local and shared
+    coherence; `dying` names them.
+    """
+    from sovereign_agent.mcp_reach import node_vitals as _f
+
+    return _f()
+
+
+@mcp.tool()
+async def recent_learnings(limit: int = 15) -> dict:
+    """Her recorded failures and the rules they produced.
+
+    Each names a real incident and the check that now prevents it. The most
+    useful store in this system for anyone diagnosing it — read this before
+    concluding something is a new problem.
+    """
+    from sovereign_agent.mcp_reach import recent_learnings as _f
+
+    return _f(limit)
 
 
 # ── Entry point ───────────────────────────────────────────────────────────────
@@ -433,5 +523,26 @@ def build_remote_app(policy: RemotePolicy, *, port: int = 8765):
     mcp.settings.transport_security = TransportSecuritySettings(
         enable_dns_rebinding_protection=True, allowed_hosts=hosts, allowed_origins=origins,
     )
+    _install_central_gate()
     app = mcp.sse_app() if policy.transport == "sse" else mcp.streamable_http_app()
     return TokenGuard(app, policy.token) if policy.token else app
+
+
+def _install_central_gate() -> None:
+    """Check the tool policy for EVERY tool call at one choke point (default-deny for unclassified tools).
+    The per-tool checks in record_proof_of_value / ask_aria stay as defense in depth."""
+    from mcp.server.fastmcp.exceptions import ToolError
+
+    manager = mcp._tool_manager
+    if getattr(manager, "_aria_guarded", False):
+        return
+    original = manager.call_tool
+
+    async def guarded(name, arguments, context=None, convert_result=False):
+        ok, reason = tool_allowed(name, _POLICY)
+        if not ok:
+            raise ToolError(reason)
+        return await original(name, arguments, context=context, convert_result=convert_result)
+
+    manager.call_tool = guarded
+    manager._aria_guarded = True

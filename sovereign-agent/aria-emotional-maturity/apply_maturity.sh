@@ -21,20 +21,30 @@ mkdir -p "$REPO_ROOT/src/sovereign_agent/maturity"
 cp "$STAGING"/payload/src/sovereign_agent/maturity/*.py "$REPO_ROOT/src/sovereign_agent/maturity/"
 cp "$STAGING/payload/src/sovereign_agent/tools/maturity_tools.py" "$REPO_ROOT/src/sovereign_agent/tools/"
 
-# 2. register tools (anchored after engineering-playbook, idempotent)
+# 2. register tools (anchored + idempotent). v6.5+ layout: an isolated try/except block after
+#    knowledge-maturity, so a broken import can never take the registry down. Falls back to the older
+#    engineering-playbook anchor; refuses to guess if neither is present.
 "$VENV_PY" - "$TOOLS_INIT" <<'PYEOF'
 import sys; from pathlib import Path
 p = Path(sys.argv[1]); t = p.read_text()
 if "# maturity-import-d" in t:
-    print("SKIP: tools/__init__.py already patched")
+    print("SKIP: tools/__init__.py already patched"); sys.exit(0)
+new_imp = ("try:  # tools-wired-d — maturity-d\n"
+           "    from .maturity_tools import EmotionalCheckinTool, MaturityReportTool  # maturity-import-d\n"
+           "except Exception:  # noqa: BLE001 - optional dep; keep the registry alive\n"
+           "    EmotionalCheckinTool = MaturityReportTool = None  # type: ignore[assignment,misc]\n")
+new_all = '    "EmotionalCheckinTool",  # maturity-all-d\n    "MaturityReportTool",  # maturity-all-d\n'
+km_block = ("    KnowledgeMaturityTool = None  # type: ignore[assignment,misc]\n")
+km_all = '    "KnowledgeMaturityTool",  # knowledge-maturity-d\n'
+ep_imp = "from .engineering_playbook_tools import EngineeringPlaybookTool  # engineering-playbook-import-d\n"
+ep_all = '    "EngineeringPlaybookTool",  # engineering-playbook-all-d\n'
+if t.count(km_block) == 1 and t.count(km_all) == 1:
+    t = t.replace(km_block, km_block + new_imp, 1).replace(km_all, km_all + new_all, 1)
+elif t.count(ep_imp) == 1 and t.count(ep_all) == 1:
+    t = t.replace(ep_imp, ep_imp + new_imp, 1).replace(ep_all, ep_all + new_all, 1)
 else:
-    imp = "from .engineering_playbook_tools import EngineeringPlaybookTool  # engineering-playbook-import-d"
-    allk = '    "EngineeringPlaybookTool",  # engineering-playbook-all-d'
-    if imp not in t or allk not in t:
-        sys.exit("APPLY-FAIL: engineering-playbook anchors not found in tools/__init__.py")
-    t = t.replace(imp, imp + "\nfrom .maturity_tools import EmotionalCheckinTool, MaturityReportTool  # maturity-import-d", 1)
-    t = t.replace(allk, allk + '\n    "EmotionalCheckinTool",  # maturity-all-d\n    "MaturityReportTool",  # maturity-all-d', 1)
-    p.write_text(t); print("Patched tools/__init__.py")
+    sys.exit("APPLY-FAIL: no known anchor in tools/__init__.py (knowledge-maturity or engineering-playbook)")
+p.write_text(t); print("Patched tools/__init__.py")
 PYEOF
 
 echo "→ Compile check..."; "$VENV_PY" -m py_compile "$REPO_ROOT"/src/sovereign_agent/maturity/*.py \

@@ -1,0 +1,225 @@
+[project]
+name = "sovereign-agent"
+version = "6.5.0"
+description = "Sovereign local agent on Ollama. FOSS-first. Authority-tiered. Yours."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "operator" }]
+
+dependencies = [
+    "pydantic>=2.6,<3",
+    "ollama>=0.4.0",
+    "structlog>=24.1",
+    "httpx>=0.27",
+    "typer>=0.12",
+    "python-ulid>=2.7",
+    "tiktoken>=0.7",
+    "sqlite-vec>=0.1.6",
+    "pyyaml>=6.0",
+    "rich>=13.7",
+    "textual>=0.85",
+    "cryptography>=42.0",
+    # undeclared-dep-d (2026-08-22): resonance/{frequency,voice_crown,
+    # sacred_geometry}.py and quantum/context_layer.py all do a TOP-LEVEL
+    # `from scipy import signal` -- unguarded, so it is a hard runtime
+    # dependency. It was declared nowhere and worked only because the
+    # maintainer's venv happened to have it. CI, starting from a clean
+    # interpreter, failed with ModuleNotFoundError.
+    "scipy>=1.11",
+    "argon2-cffi>=23.1",
+    # mcp 2.x renamed FastMCP -> MCPServer; mcp_server.py is v1 code. Unpinned, a fresh
+    # install pulled mcp 2.2.0 and sov-mcp crashed on import (found 2026-10-02).
+    "mcp>=1.0,<2",
+    # undeclared-dep-d (2026-09-18): web_game_bridge (the browser<->Aria
+    # WebSocket server, `sov game connect`) imports aiohttp at start. It was
+    # declared nowhere and only worked from the repo .venv; the installed
+    # `sov` venv lacked it, so `sov game connect` crashed on launch with
+    # ModuleNotFoundError while reporting only "did not start listening".
+    "aiohttp>=3.9",
+    "numpy>=1.26",   # imported at top level by 36 modules; was only arriving transitively via scipy
+    "psutil>=5.9",   # cockpit system monitor (sysmon, data-science screen)
+]
+
+[project.optional-dependencies]
+# NOTE: kept in sync with [dependency-groups] below.
+#
+# Two parallel blocks because the operator baseline is older pip:
+#   - uv 0.4+, Poetry 2.2+, PDM, Hatch 1.16+, and pip 25.1+ all read
+#     [dependency-groups] (PEP 735) for the `--group` flag.
+#   - Older pip (< 25.1) only reads [project.optional-dependencies] for
+#     extras (`pip install -e .[dev]`).
+#   - The pip-fallback path in install.sh has to work on whatever pip is
+#     available, so we expose dev deps both ways until the operator
+#     baseline catches up.
+#
+# If you edit one block, edit the other. The lists must stay identical.
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "pytest-cov>=5.0",
+    "pytest-xdist>=3.5",
+    "hypothesis>=6.100",
+    # brain-measures-d: the independent oracle for the Starfield's
+    # quantum measures. TEST-TIME ONLY -- the hot loop stays numpy,
+    # because /brain has a payload budget Statevector cannot fit in.
+    "qiskit>=2.5",
+    "ruff>=0.5",
+    "mypy>=1.10",
+]
+distill = [
+    "pymupdf4llm>=0.0.17",
+    "tree-sitter>=0.22",
+    "tree-sitter-languages>=1.10",
+    "pypdf>=4.0",  # planners/pdf_inventory.py fallback extractor
+]
+media = [
+    # Ported from mos_harvester / mos_merger — heavy GPU deps, optional
+    "faster-whisper>=1.0",
+    "easyocr>=1.7",
+    "PyMuPDF>=1.24",
+    # image_generate.py / image_edit.py's real dependency — was never
+    # actually listed here despite the code requiring it (found 2026-07-28
+    # while wiring Movie Studio's video-gen phase: diffusers was missing
+    # from this venv entirely, meaning image generation had never
+    # actually run live, only under mocked tests). transformers/
+    # accelerate/torch are already covered by the training group.
+    "diffusers>=0.31",
+    # The video pipeline's text encoder tokenizer (Wan 2.1's UMT5 today; LTX
+    # when these were first found missing live, 2026-07-28) needs these two.
+    "sentencepiece>=0.2",
+    "protobuf>=5.0",
+    # diffusers' export_to_video() needs this — the OpenCV legacy
+    # fallback path is deprecated and wasn't installed either.
+    "imageio>=2.37",
+    "imageio-ffmpeg>=0.6",
+    # sprite_qa.py (2026-08-02): place_game_sprite's generated PNGs came
+    # back as opaque white-background images (no real alpha) even when
+    # the prompt asked for a transparent background — text-to-image
+    # diffusion models don't produce alpha from a plain prompt, that
+    # needs a real matting model. rembg (FOSS, MIT, local ONNX U2Net,
+    # no external API) is the standard tool for exactly this.
+    "rembg>=2.0",
+    # rembg's own runtime backend — CPU-only deliberately (not
+    # onnxruntime-gpu): background removal is fast enough on CPU that
+    # it's not worth a second CUDA runtime alongside torch's own,
+    # which is the kind of GPU-stack conflict CLAUDE.md's vram_lock
+    # discipline exists to avoid in the first place.
+    "onnxruntime>=1.20",
+    "Pillow>=10.0",  # movie_clip_quality_gate, sprite QA
+    "open-clip-torch>=2.24",  # spawn/qa_scouts.py
+    "piper-tts>=1.2",  # voice.py
+]
+browser = [
+    # Stateful JS-rendered web browsing (M50 browser-crown)
+    # After install: playwright install chromium
+    "playwright>=1.40",
+    "markdownify>=0.11",  # tools/web_better.py
+]
+cloud = [
+    # cloud-mode-d (Kevin, 2026-07-25) — "fast free cloud mode": optional,
+    # off by default. Pools 24 free-tier LLM providers behind one async
+    # client (freellmpool, MIT, github.com/0xzr/freellmpool). Only
+    # installed if the operator opts in with `pip install -e .[cloud]`.
+    "freellmpool>=0.11",
+    "anthropic>=0.40",  # tools/image_analyze.py
+]
+screencast = [
+    # screen-recording-portal-d (Kevin, 2026-08-02) — cockpit/screen_studio_pane.py's
+    # manual screen recorder needs the real fix, not a workaround: this
+    # machine's compositor (COSMIC) doesn't implement wlr-screencopy
+    # (confirmed live — wf-recorder's only capture protocol), so recording
+    # goes through org.freedesktop.portal.ScreenCast + PipeWire instead —
+    # the same portal every modern compositor (GNOME/KDE/COSMIC) supports.
+    # dbus-next: pure-Python asyncio D-Bus client, MIT — no GLib mainloop
+    # dependency (unlike dbus-python/pydbus), fits this codebase's existing
+    # async style. Only installed if the operator opts in with
+    # `pip install -e .[screencast]`.
+    "dbus-next>=0.2.3",
+]
+discord = [
+    # discord_admin/bot.py — the Bot Shop admin bot (imported lazily; was undeclared until 2026-10-02)
+    "discord.py>=2.3",
+]
+three-d = [
+    # shape_engine, blender_generate, spawn/gameready.py
+    "trimesh>=4.0",
+    "fast-simplification>=0.1",
+]
+gpu = [
+    # cockpit GPU monitor (import name: pynvml)
+    "nvidia-ml-py>=12.0",
+]
+training = [
+    # fine-tune-d (Kevin, 2026-07-21) — LoRA fine-tuning a small base
+    # model on her own curated history. Standard HF stack, not Unsloth:
+    # this machine's GTX 1070 is Pascal (compute capability 6.1), below
+    # what Unsloth's fused kernels target (Turing+) — plain
+    # transformers+peft LoRA in bf16/fp16 has no such floor and runs on
+    # any CUDA card. torch itself is already installed (faster-whisper's
+    # dependency); not re-pinned here.
+    "transformers>=4.40",
+    "peft>=0.11",
+    "datasets>=2.19",
+    "accelerate>=0.30",
+    # hardware-liberation-d (2026-07-25) — real QLoRA (4-bit NF4), not
+    # plain fp16 LoRA. Confirmed directly on this GTX 1070: ~1.15 GB to
+    # load Qwen2.5-1.5B-Instruct in 4-bit vs ~3 GB unquantized.
+    "bitsandbytes>=0.43.6",
+    "torch>=2.2",  # aria_lm, weight_store, video (7 files import it at top level)
+    "safetensors>=0.4",  # weight_store
+    "huggingface-hub>=0.23",  # video_wan.py
+]
+
+[dependency-groups]
+# PEP 735 dev-tooling group. Mirrors [project.optional-dependencies].dev above.
+# Use `uv sync --group dev` for the first-class uv workflow.
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "pytest-cov>=5.0",
+    "pytest-xdist>=3.5",
+    "hypothesis>=6.100",
+    # brain-measures-d: the independent oracle for the Starfield's
+    # quantum measures. TEST-TIME ONLY -- the hot loop stays numpy,
+    # because /brain has a payload budget Statevector cannot fit in.
+    "qiskit>=2.5",
+    "ruff>=0.5",
+    "mypy>=1.10",
+]
+
+[project.scripts]
+sovereign = "sovereign_agent.cli:app"
+sov = "sovereign_agent.cli:app"
+sov-chat = "sovereign_agent.cli:_sov_chat_entrypoint"
+sov-mcp = "sovereign_agent.mcp_server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sovereign_agent"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-q --strict-markers"
+markers = [
+    # Real work with a real cost: builds a venv, touches the network,
+    # or waits on a process. Deselect with -m "not slow".
+    "slow: takes seconds rather than milliseconds",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "S", "RET", "SIM", "PTH"]
+ignore = ["S101"]  # assert in tests is fine
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+ignore_missing_imports = true

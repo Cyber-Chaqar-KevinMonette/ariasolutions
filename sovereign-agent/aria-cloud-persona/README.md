@@ -4,6 +4,8 @@
 > role persona (kernel and standards), her Tagline, Stance and Voice from ARIA.md, and her current inner
 > state, sent ahead of the conversation.
 
+> **Targets Aria v6.5.0** (Erebo-Aria, 2026-09-29). Ported 2026-10-02: the conditioning block was re-applied to v6.5.0's `cloud_client.py` (+16/−1 lines). v6.5 retries pinned pool models in a loop, so messages are conditioned once, before the loop, and passed through `_to_openai_messages`. The local fallback still gets the original messages.
+
 ## Why (measured in the code, 2026-10-02)
 
 - **Local models:** Aria's identity is baked into each Ollama model's Modelfile `SYSTEM` block by

@@ -1,5 +1,31 @@
 # Changelog
 
+## Unreleased — 2026-10-02c (ported to v6.5.0 + default-deny guard + lockfile fix)
+
+Cloud Claude. **Why:** this repo turned out to be an old v0.4.0 snapshot. Kevin's real repo, Erebo-Aria, is
+v6.5.0, and its `mcp_server.py` and `cloud_client.py` had changed, so the earlier whole-file replacements
+would have overwritten newer work. **Nothing applied; staged only.**
+
+- **`aria-mcp-remote-guard`**
+  - Re-built as a small edit to v6.5's `mcp_server.py`.
+  - **Default-deny** for remote clients: only the 14 classified read-only tools are allowed, unclassified
+    tools are refused at a central gate on the MCP tool manager, and a test requires every registered
+    tool to be classified.
+  - The apply fixes v6.5's stale hardcoded `"0.4.0"` version assertion so it compares against the
+    installed package version.
+  - **Proof:** 24 tests, a mutation-tested gate, and 31 passing on a v6.5 dry-run apply.
+- **`aria-cloud-persona`:** re-built on v6.5's `cloud_client.py` (+16/−1); conditions messages once,
+  before the pinned-model retry loop.
+- **`aria-emotional-maturity`:** registration in v6.5's isolated `try/except` style; 27 tests pass on v6.5.
+- **`reports/2026-10-02/v6.5-lockfile/`**
+  - **Choice:** cap only `mcp` (`<2`), the one proven breakage — a fresh install pulled mcp 2.2.0 and
+    `sov-mcp` crashed on import. Declare `numpy` (top-level import in 36 modules), `psutil`, and 13
+    undeclared optional imports (including `discord.py`) in the right extras.
+  - **Proof:** 199 locked packages (the stale lock had 114); a clean `uv sync --locked` runs `sov-mcp`
+    with 16 tools.
+- **Root `CLAUDE.md`:** memory of the canonical repo, Cloudflare Pages hosting, the mcp pin, and the list
+  of known-fake test secrets.
+
 ## Unreleased — 2026-10-02b (emotional maturity + cloud persona)
 
 Cloud Claude, at Kevin's request: "a maturity emotion system that genuinely matters", and "cloud models

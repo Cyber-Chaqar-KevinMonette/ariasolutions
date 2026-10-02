@@ -22,14 +22,32 @@ cp "$MCP_SERVER" "$BACKUP_DIR/mcp_server.py.bak"
 mkdir -p "$REPO_ROOT/src/sovereign_agent/mcp_guard"
 cp "$STAGING"/payload/src/sovereign_agent/mcp_guard/*.py "$REPO_ROOT/src/sovereign_agent/mcp_guard/"
 cp "$STAGING/payload/src/sovereign_agent/mcp_server.py" "$MCP_SERVER"
+
+# 1b. fix a stale assertion in tests/test_mcp_server.py (hardcoded "0.4.0"; fails on pristine v6.5). Make it
+#     check what its name says — code version == installed package version — stricter, never looser.
+MCP_TEST="$REPO_ROOT/tests/test_mcp_server.py"
+cp "$MCP_TEST" "$BACKUP_DIR/test_mcp_server.py.bak"
+"$VENV_PY" - "$MCP_TEST" <<'PYEOF'
+import sys; from pathlib import Path
+p = Path(sys.argv[1]); t = p.read_text()
+old = '    assert __version__ == "0.4.0"\n'
+new = ('    from importlib.metadata import version  # mcp-guard-d: was a hardcoded "0.4.0"\n'
+       '    assert __version__ == version("sovereign-agent")\n')
+if new in t:
+    print("SKIP: version assertion already fixed")
+elif t.count(old) == 1:
+    p.write_text(t.replace(old, new, 1)); print("Fixed stale version assertion in test_mcp_server.py")
+else:
+    print("NOTE: version assertion not found as expected — left unchanged")
+PYEOF
 # (no tool registration — this module ships no Aria tools; it guards the MCP bridge)
 
 echo "→ Compile check..."; "$VENV_PY" -m py_compile "$REPO_ROOT"/src/sovereign_agent/mcp_guard/*.py "$MCP_SERVER" || \
-  { echo "APPLY-FAIL: compile error — restoring mcp_server.py"; cp "$BACKUP_DIR/mcp_server.py.bak" "$MCP_SERVER"; exit 1; }
+  { echo "APPLY-FAIL: compile error — restoring mcp_server.py"; cp "$BACKUP_DIR/mcp_server.py.bak" "$MCP_SERVER"; cp "$BACKUP_DIR/test_mcp_server.py.bak" "$MCP_TEST"; exit 1; }
 # test file is named by PKG (new_module.sh writes test_<PKG>.py), NOT slug —
 # they differ for every kebab-case slug, so referencing mcp-remote-guard here silently
 # skipped the copy + ran pytest on a missing file (hardened 2026-07-19).
 [[ -f "$STAGING/tests/test_mcp_guard.py" ]] && cp "$STAGING/tests/test_mcp_guard.py" "$REPO_ROOT/tests/"
 echo "Running tests..."; "$VENV_PY" -m pytest "$REPO_ROOT"/tests/test_mcp_guard.py "$REPO_ROOT"/tests/test_mcp_server.py -q || \
-  { echo "APPLY-FAIL: applied tests did not pass — restoring mcp_server.py"; cp "$BACKUP_DIR/mcp_server.py.bak" "$MCP_SERVER"; exit 1; }
+  { echo "APPLY-FAIL: applied tests did not pass — restoring mcp_server.py"; cp "$BACKUP_DIR/mcp_server.py.bak" "$MCP_SERVER"; cp "$BACKUP_DIR/test_mcp_server.py.bak" "$MCP_TEST"; exit 1; }
 echo "=== aria-mcp-remote-guard applied. Reversible: backups at $BACKUP_DIR 💛 ==="

@@ -10,6 +10,47 @@
 
 ---
 
+## 2026-10-02 (d) — Cloud Claude — PORTED to v6.5.0, default-deny MCP guard, lockfile fix
+
+**Read this first.** Entries (a)–(c) were built and audited against this `ariasolutions` repo, which turned
+out to be an **old v0.4.0 snapshot (2026-08-08)**. Your real repo is **Erebo-Aria, v6.5.0**. This entry
+supersedes them for anything code-related.
+
+### Changed (all staged in `ariasolutions` branch `claude/admiring-dijkstra-3zhnih`, folders under `sovereign-agent/`)
+
+| Item | What and why |
+|---|---|
+| `aria-mcp-remote-guard/` | **Re-built on v6.5's `mcp_server.py`** (+73/−13 lines, no longer a whole-file swap). **Now default-deny:** only the 14 classified read-only tools are remote-callable, unclassified tools are refused at one central gate, and a test fails if any registered tool is unclassified. The apply also fixes v6.5's stale `assert __version__ == "0.4.0"` in `tests/test_mcp_server.py`, which fails on pristine v6.5, to check against the installed package version. |
+| `aria-cloud-persona/` | **Re-built on v6.5's `cloud_client.py`** (+16/−1 lines). Messages are conditioned once, before v6.5's pinned-model retry loop. |
+| `aria-emotional-maturity/` | Compatible as is (`emotion.py` and `reward.py` are unchanged in v6.5). Tool registration now uses v6.5's isolated `try/except` style after `knowledge-maturity`. |
+| `reports/2026-10-02/v6.5-lockfile/` | **New `pyproject.toml` + `uv.lock` for v6.5** (see its README): `mcp>=1.0,<2`, `numpy` declared in core, `discord.py` and 13 other undeclared imports added to the right extras. 199 locked packages (the stale lock had 114). |
+| Root `CLAUDE.md` | Memory: canonical repo, website on Cloudflare Pages, the mcp pin, and **the list of known FAKE test secrets** (don't rotate those). |
+
+### Verified (on v6.5.0)
+
+- **Fresh install with the OLD lock:** `uv sync` pulled mcp 2.2.0, and `sov-mcp` crashed on import. Reproduced.
+- **Clean `uv sync --locked --group dev` with the NEW lock:** mcp 1.30.0; `sov-mcp` imports with 16 tools;
+  `sovereign --version` → 6.5.0.
+- **Dry-run apply of all three modules on v6.5:**
+  - maturity: tools register (T1/T0), 27 tests pass
+  - guard: 31 pass, including the existing MCP tests
+  - persona: applied, tests pass
+- **Guard mutation test:** removing the central gate fails the end-to-end test.
+- **Full v6.5 suite with all three applied:** running at commit time — result in the next commit.
+
+### Needs Kevin / Claude Code on Kevin's machine
+
+- [ ] **Bring these into Erebo-Aria.** Copy the three `aria-*` folders and the lockfile pair into
+      `~/AA-Erebo/sovereign-agent/`, or let Cloud Claude push them as a branch to Erebo-Aria if Kevin allows.
+- [ ] Apply the lockfile first (steps in its README), then the modules with `./scripts/safe_apply.sh`.
+- [ ] **Re-audit v6.5 itself.** The 2026-10-02 audit numbers (6,944 tests, persistence 9/9, CLI 16/16,
+      claim check) describe v0.4.0. The scripts in `reports/2026-10-02/` can be re-run on v6.5.
+
+### Review status
+- [ ] Reviewed by Claude Code on ____ — notes:
+
+---
+
 ## 2026-10-02 (c) — Cloud Claude — found the website source; launch readiness review
 
 ### Found

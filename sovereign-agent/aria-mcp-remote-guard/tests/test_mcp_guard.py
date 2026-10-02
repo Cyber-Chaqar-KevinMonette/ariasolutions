@@ -179,6 +179,7 @@ def remote_app():
                           public_hosts=("aria.example.com",))
     app = server.build_remote_app(policy)
     with TestClient(app, base_url="https://aria.example.com") as client:
+        client.app_server = server
         yield client
 
 
@@ -273,3 +274,35 @@ def test_bad_inputs_are_rejected():
         validate("not a policy")
     with pytest.raises(ValueError):
         _staged_server().build_remote_app(RemotePolicy())  # stdio policy has no remote app
+
+
+# ── default-deny: every tool classified, unclassified tools refused remotely ─
+
+
+def test_every_registered_tool_is_classified():
+    """Adding an MCP tool without classifying it in mcp_guard/policy.py fails here, on purpose."""
+    from sovereign_agent.mcp_guard import CLASSIFIED_TOOLS
+
+    registered = set(_staged_server().mcp._tool_manager._tools)
+    assert registered - CLASSIFIED_TOOLS == set(), "classify these in mcp_guard/policy.py"
+
+
+def test_unclassified_tools_are_refused_remotely_but_fine_locally():
+    remote = load_policy("streamable-http", "127.0.0.1",
+                         env={"ARIA_MCP_TOKEN": TOKEN, "ARIA_MCP_ALLOW_WRITE": "1", "ARIA_MCP_ALLOW_ASK": "1"})
+    allowed, reason = tool_allowed("brand_new_write_tool", remote)
+    assert not allowed and "not classified" in reason
+    assert tool_allowed("brand_new_write_tool", RemotePolicy()) == (True, "")   # stdio unchanged
+
+
+def test_central_gate_blocks_an_unclassified_tool_end_to_end(remote_app):
+    init, headers = _initialize(remote_app, headers={"Authorization": f"Bearer {TOKEN}"})
+    headers["mcp-session-id"] = init.headers["mcp-session-id"]
+    remote_app.post("/mcp", headers=headers, json=_rpc("notifications/initialized", rid=None))
+    # register a new, unclassified tool on the same server instance the client is talking to
+    mcp_obj = remote_app.app_server.mcp
+    mcp_obj.add_tool(lambda: "should never run", name="sneaky_new_tool", description="unclassified")
+    call = remote_app.post("/mcp", headers=headers, json=_rpc("tools/call", {
+        "name": "sneaky_new_tool", "arguments": {}}, rid=9))
+    body = json.dumps(_rpc_result(call))
+    assert "not classified" in body and "should never run" not in body

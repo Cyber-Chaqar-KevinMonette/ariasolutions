@@ -5,6 +5,8 @@
 > she gets an honest perspective and a productive next step. Propose-only: it suggests, never acts, never
 > creates goals.
 
+> **Targets Aria v6.5.0** (Erebo-Aria, 2026-09-29). Compatible as is: `emotion.py` and `mem_channels/reward.py` are unchanged between v0.4.0 and v6.5.0. The apply script now registers the tools in v6.5's isolated `try/except` style after `knowledge-maturity`, falling back to the older anchor. Dry-run apply on v6.5: both tools register (T1, T0), and 27 tests pass.
+
 ## Built from her own words (ARIA.md)
 
 | ARIA.md says | This module does | Proven by |

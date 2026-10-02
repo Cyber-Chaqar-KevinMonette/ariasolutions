@@ -1,0 +1,83 @@
+--- a/sovereign-agent/pyproject.toml
++++ b/sovereign-agent/pyproject.toml
+@@ -28,13 +28,17 @@
+     # interpreter, failed with ModuleNotFoundError.
+     "scipy>=1.11",
+     "argon2-cffi>=23.1",
+-    "mcp>=1.0",
++    # mcp 2.x renamed FastMCP -> MCPServer; mcp_server.py is v1 code. Unpinned, a fresh
++    # install pulled mcp 2.2.0 and sov-mcp crashed on import (found 2026-10-02).
++    "mcp>=1.0,<2",
+     # undeclared-dep-d (2026-09-18): web_game_bridge (the browser<->Aria
+     # WebSocket server, `sov game connect`) imports aiohttp at start. It was
+     # declared nowhere and only worked from the repo .venv; the installed
+     # `sov` venv lacked it, so `sov game connect` crashed on launch with
+     # ModuleNotFoundError while reporting only "did not start listening".
+     "aiohttp>=3.9",
++    "numpy>=1.26",   # imported at top level by 36 modules; was only arriving transitively via scipy
++    "psutil>=5.9",   # cockpit system monitor (sysmon, data-science screen)
+ ]
+ 
+ [project.optional-dependencies]
+@@ -67,6 +71,7 @@
+     "pymupdf4llm>=0.0.17",
+     "tree-sitter>=0.22",
+     "tree-sitter-languages>=1.10",
++    "pypdf>=4.0",  # planners/pdf_inventory.py fallback extractor
+ ]
+ media = [
+     # Ported from mos_harvester / mos_merger — heavy GPU deps, optional
+@@ -101,11 +106,15 @@
+     # which is the kind of GPU-stack conflict CLAUDE.md's vram_lock
+     # discipline exists to avoid in the first place.
+     "onnxruntime>=1.20",
++    "Pillow>=10.0",  # movie_clip_quality_gate, sprite QA
++    "open-clip-torch>=2.24",  # spawn/qa_scouts.py
++    "piper-tts>=1.2",  # voice.py
+ ]
+ browser = [
+     # Stateful JS-rendered web browsing (M50 browser-crown)
+     # After install: playwright install chromium
+     "playwright>=1.40",
++    "markdownify>=0.11",  # tools/web_better.py
+ ]
+ cloud = [
+     # cloud-mode-d (Kevin, 2026-07-25) — "fast free cloud mode": optional,
+@@ -113,6 +122,7 @@
+     # client (freellmpool, MIT, github.com/0xzr/freellmpool). Only
+     # installed if the operator opts in with `pip install -e .[cloud]`.
+     "freellmpool>=0.11",
++    "anthropic>=0.40",  # tools/image_analyze.py
+ ]
+ screencast = [
+     # screen-recording-portal-d (Kevin, 2026-08-02) — cockpit/screen_studio_pane.py's
+@@ -127,6 +137,19 @@
+     # `pip install -e .[screencast]`.
+     "dbus-next>=0.2.3",
+ ]
++discord = [
++    # discord_admin/bot.py — the Bot Shop admin bot (imported lazily; was undeclared until 2026-10-02)
++    "discord.py>=2.3",
++]
++three-d = [
++    # shape_engine, blender_generate, spawn/gameready.py
++    "trimesh>=4.0",
++    "fast-simplification>=0.1",
++]
++gpu = [
++    # cockpit GPU monitor (import name: pynvml)
++    "nvidia-ml-py>=12.0",
++]
+ training = [
+     # fine-tune-d (Kevin, 2026-07-21) — LoRA fine-tuning a small base
+     # model on her own curated history. Standard HF stack, not Unsloth:
+@@ -143,6 +166,9 @@
+     # plain fp16 LoRA. Confirmed directly on this GTX 1070: ~1.15 GB to
+     # load Qwen2.5-1.5B-Instruct in 4-bit vs ~3 GB unquantized.
+     "bitsandbytes>=0.43.6",
++    "torch>=2.2",  # aria_lm, weight_store, video (7 files import it at top level)
++    "safetensors>=0.4",  # weight_store
++    "huggingface-hub>=0.23",  # video_wan.py
+ ]
+ 
+ [dependency-groups]
